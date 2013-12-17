@@ -24,6 +24,7 @@ var url = require("url");
 var mongo = require("mongodb");
 var monk = require("monk");
 var spawn = require('child_process').spawn;
+var gpio = require("pi-gpio");
 
 // connect to MongoDB
 var db = monk('localhost:27017/opendoor');
@@ -39,7 +40,7 @@ const passphrases = db.get('passphrase');
 const tokenCollection = db.get('token');
 
 // TODO make https 
-// create key and sign certificate
+// and sign certificate
 var server = http.createServer(serverThread);
 server.listen(8000);
 
@@ -125,10 +126,16 @@ function serverThread(request, response)
 			
 			if(success)
 			{
-				// TODO run command on raspberry pi	
-				open = spawn('ping', ['127.0.0.1 > C:\t.txt']);
+				//open = spawn('ping', ['127.0.0.1 > C:\t.txt']);
 				
-				open.stdin.end();
+				//open.stdin.end();
+				gpio.open(7, "output", function(err) {        // Open pin 7 for output
+					gpio.write(7, 1, 
+					setTimeout(function() {            // Set pin 7 high (1)
+						gpio.close(7);                        // Close pin 7
+						},5000)); // weit 5 seconds
+				});
+
 			}
 			response.end(JSON.stringify({"success": success
 					}));
